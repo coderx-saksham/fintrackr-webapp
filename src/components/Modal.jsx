@@ -1,7 +1,16 @@
-import React from "react";
-import {X} from "lucide-react";
+
+import { useEffect } from "react";
+import { X } from "lucide-react";
 
 const Modal = ({ isOpen, onClose, children, title }) => {
+    useEffect(() => {
+        if (!isOpen) return;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     return (
@@ -11,9 +20,9 @@ const Modal = ({ isOpen, onClose, children, title }) => {
         >
             <div className="relative p-4 w-full max-w-2xl max-h-[90vh]">
                 {/* Modal header */}
-                <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100">
+                <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 flex flex-col max-h-[90vh]">
                     {/* Modal content */}
-                    <div className="flex items-center justify-between p-5 md:p-6 border-b border-gray-100 rounded-t-xl">
+                    <div className="flex items-center justify-between p-5 md:p-6 border-b border-gray-100 rounded-t-xl shrink-0">
                         <h3 className="text-xl font-semibold text-gray-800">
                             {title}
                         </h3>
@@ -28,7 +37,7 @@ const Modal = ({ isOpen, onClose, children, title }) => {
                     </div>
 
                     {/*Modal body*/}
-                    <div className="p-5 md:p-6 text-gray-700">
+                    <div className="p-5 md:p-6 text-gray-700 overflow-y-auto">
                         {children}
                     </div>
                 </div>
