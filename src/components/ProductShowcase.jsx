@@ -11,13 +11,13 @@ const ProductShowcase = () => {
                     <img
                         src={assets.landing}
                         className="w-full h-auto object-cover rounded-lg shadow-xl"
-                        alt="Money Manager App Dashboard"
+                        alt="FinTrackr App Dashboard"
                         onError={() => setBroken(true)}
                     />
                 ) : (
                     <div className="w-full aspect-[2/1] rounded-lg shadow-xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
                         <div className="text-center px-6">
-                            <p className="text-3xl font-bold text-purple-800">Money Manager</p>
+                            <p className="text-3xl font-bold text-purple-800">FinTrackr</p>
                             <p className="text-purple-600 mt-2">Track income, expenses & goals in one place</p>
                         </div>
                     </div>

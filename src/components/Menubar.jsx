@@ -70,7 +70,7 @@ const Menubar = ({ activeMenu }) => {
                             MM
                         </div>
                     )}
-                    <span className="text-lg font-medium text-black truncate">Money Manager</span>
+                    <span className="text-lg font-medium text-black truncate">FinTrackr</span>
                 </div>
             </div>
 

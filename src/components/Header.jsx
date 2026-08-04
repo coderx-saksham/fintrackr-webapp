@@ -30,7 +30,7 @@ const Header = () => {
                                 MM
                             </div>
                         )}
-                        <span className="text-lg font-bold text-black truncate">Money Manager</span>
+                        <span className="text-lg font-bold text-black truncate">FinTrackr</span>
                     </div>
 
                     <nav className="hidden lg:flex items-center space-x-8">
