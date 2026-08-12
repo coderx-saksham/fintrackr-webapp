@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Dashboard from "../components/Dashboard.jsx";
 import { useUser } from "../hooks/useUser.jsx";
-import { loadList, saveList, seedDummyData, STORE_KEYS } from "../util/dummyData.js";
+import { loadList, saveList, seedDummyData, STORE_KEYS, isDemoUser } from "../util/dummyData.js";
 import { addThousandsSeparator } from "../util/util.js";
 import toast from "react-hot-toast";
 import { Plus, AlertTriangle } from "lucide-react";
@@ -12,7 +12,9 @@ const Budgets = () => {
   const [form, setForm] = useState({ category: "", limit: "", spent: "", icon: "💰" });
 
   useEffect(() => {
-    seedDummyData();
+    if (isDemoUser()) {
+      seedDummyData();
+    }
     setBudgets(loadList(STORE_KEYS.budgets));
   }, []);
 
@@ -96,6 +98,11 @@ const Budgets = () => {
         </div>
 
         <div className="space-y-4">
+          {budgets.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-8 border border-dashed border-gray-200 rounded-xl">
+              No budgets yet. Add your first category limit above.
+            </p>
+          )}
           {budgets.map((b) => {
             const pct = Math.min(100, Math.round((b.spent / b.limit) * 100));
             const over = b.spent > b.limit;

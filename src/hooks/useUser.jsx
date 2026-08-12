@@ -3,6 +3,7 @@ import {AppContext} from "../context/AppContext.jsx";
 import {useNavigate} from "react-router-dom";
 import axiosConfig from "../util/axiosConfig.jsx";
 import {API_ENDPOINTS} from "../util/apiEndpoints.js";
+import { setActiveUserEmail } from "../util/dummyData.js";
 
 export const useUser = () => {
     const {user, setUser, clearUser} = useContext(AppContext);
@@ -10,6 +11,13 @@ export const useUser = () => {
 
     useEffect(() => {
         if (user) {
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+            clearUser();
+            navigate("/home");
             return;
         }
 
@@ -21,13 +29,18 @@ export const useUser = () => {
 
                 if (isMounted && response.data) {
                     setUser(response.data);
+                    if (response.data.email) {
+                        setActiveUserEmail(response.data.email);
+                    }
                 }
 
             }catch (error) {
                 console.log("Failed to fetch the user info", error);
                 if (isMounted) {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("userEmail");
                     clearUser();
-                    navigate("/login");
+                    navigate("/home");
                 }
             }
         }

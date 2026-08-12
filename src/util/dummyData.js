@@ -31,24 +31,76 @@ export const DUMMY_BILLS = [
   { id: "bl6", name: "Gym Membership", amount: 1500, dueDate: "2026-08-03", paid: false, icon: "🏋️" },
 ];
 
-const KEYS = {
+const BASE_KEYS = {
   budgets: "mm_budgets",
   goals: "mm_goals",
   bills: "mm_bills",
-  seeded: "mm_seeded_v2_demo",
+  seeded: "mm_seeded",
 };
 
+const LEGACY_KEYS = ["mm_budgets", "mm_goals", "mm_bills", "mm_seeded_v2_demo"];
+
+function currentEmail() {
+  return (localStorage.getItem("userEmail") || "").toLowerCase().trim();
+}
+
+function isDemoUser(email = currentEmail()) {
+  return email === DEMO_USER.email.toLowerCase();
+}
+
+function scopedKey(baseKey, email = currentEmail()) {
+  const scope = email || "guest";
+  return `${baseKey}__${scope}`;
+}
+
+/** Remove old global (non-scoped) demo keys so they cannot leak to new users */
+export function clearLegacyDemoKeys() {
+  LEGACY_KEYS.forEach((key) => localStorage.removeItem(key));
+}
+
+export function setActiveUserEmail(email) {
+  if (email) {
+    localStorage.setItem("userEmail", email.toLowerCase().trim());
+  } else {
+    localStorage.removeItem("userEmail");
+  }
+}
+
 export function seedDummyData(force = false) {
-  if (!force && localStorage.getItem(KEYS.seeded)) return;
-  localStorage.setItem(KEYS.budgets, JSON.stringify(DUMMY_BUDGETS));
-  localStorage.setItem(KEYS.goals, JSON.stringify(DUMMY_GOALS));
-  localStorage.setItem(KEYS.bills, JSON.stringify(DUMMY_BILLS));
-  localStorage.setItem(KEYS.seeded, "1");
+  const email = currentEmail();
+  if (!isDemoUser(email)) return;
+
+  const seededKey = scopedKey(BASE_KEYS.seeded, email);
+  if (!force && localStorage.getItem(seededKey)) return;
+
+  localStorage.setItem(scopedKey(BASE_KEYS.budgets, email), JSON.stringify(DUMMY_BUDGETS));
+  localStorage.setItem(scopedKey(BASE_KEYS.goals, email), JSON.stringify(DUMMY_GOALS));
+  localStorage.setItem(scopedKey(BASE_KEYS.bills, email), JSON.stringify(DUMMY_BILLS));
+  localStorage.setItem(seededKey, "1");
+}
+
+/** Ensure the signed-in user has their own empty lists (new users) or demo data (demo user) */
+export function initUserLocalData(email) {
+  clearLegacyDemoKeys();
+  setActiveUserEmail(email);
+
+  if (isDemoUser(email)) {
+    seedDummyData(true);
+    return;
+  }
+
+  const normalized = (email || "").toLowerCase().trim();
+  [BASE_KEYS.budgets, BASE_KEYS.goals, BASE_KEYS.bills].forEach((baseKey) => {
+    const key = scopedKey(baseKey, normalized);
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, JSON.stringify([]));
+    }
+  });
 }
 
 export function loadList(key, fallback = []) {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = localStorage.getItem(scopedKey(key));
     return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
@@ -56,7 +108,8 @@ export function loadList(key, fallback = []) {
 }
 
 export function saveList(key, list) {
-  localStorage.setItem(key, JSON.stringify(list));
+  localStorage.setItem(scopedKey(key), JSON.stringify(list));
 }
 
-export const STORE_KEYS = KEYS;
+export const STORE_KEYS = BASE_KEYS;
+export { isDemoUser };

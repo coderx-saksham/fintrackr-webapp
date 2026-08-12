@@ -13,9 +13,10 @@ import Budgets from "./pages/Budgets.jsx";
 import Goals from "./pages/Goals.jsx";
 import Bills from "./pages/Bills.jsx";
 import AiLab from "./pages/AiLab.jsx";
-import { seedDummyData } from "./util/dummyData.js";
+import { clearLegacyDemoKeys } from "./util/dummyData.js";
 
-seedDummyData();
+// Clear old global demo seed so new visitors never inherit abcd demo lists
+clearLegacyDemoKeys();
 
 const App = () => {
     return (
@@ -43,13 +44,9 @@ const App = () => {
     )
 }
 
+/** Always land on the marketing homepage so users choose Login or Register */
 const Root = () => {
-    const isAuthenticated = !!localStorage.getItem("token");
-    return isAuthenticated ? (
-        <Navigate to="/dashboard" />
-    ) : (
-      <Navigate to="/home" />
-    );
+    return <Navigate to="/home" replace />;
 }
 
 export default App;

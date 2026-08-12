@@ -35,7 +35,15 @@ axiosConfig.interceptors.response.use((response) => {
 }, (error) => {
     if(error.response) {
         if (error.response.status === 401) {
-            window.location.href = "/login";
+            localStorage.removeItem("token");
+            localStorage.removeItem("userEmail");
+            // Send users to the landing page (choose login/register), not a forced login toast loop
+            if (!window.location.pathname.startsWith("/login") &&
+                !window.location.pathname.startsWith("/signup") &&
+                !window.location.pathname.startsWith("/home") &&
+                window.location.pathname !== "/") {
+                window.location.href = "/home";
+            }
         } else if (error.response.status === 500) {
             console.error("Server error. Please try again later");
         }

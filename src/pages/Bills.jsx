@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Dashboard from "../components/Dashboard.jsx";
 import { useUser } from "../hooks/useUser.jsx";
-import { loadList, saveList, seedDummyData, STORE_KEYS } from "../util/dummyData.js";
+import { loadList, saveList, seedDummyData, STORE_KEYS, isDemoUser } from "../util/dummyData.js";
 import { addThousandsSeparator } from "../util/util.js";
 import toast from "react-hot-toast";
 import { Plus, Bell, CheckCircle2, Circle } from "lucide-react";
@@ -12,7 +12,9 @@ const Bills = () => {
   const [form, setForm] = useState({ name: "", amount: "", dueDate: "", icon: "📄" });
 
   useEffect(() => {
-    seedDummyData();
+    if (isDemoUser()) {
+      seedDummyData();
+    }
     setBills(loadList(STORE_KEYS.bills));
   }, []);
 
@@ -118,6 +120,11 @@ const Bills = () => {
         </div>
 
         <div className="space-y-3">
+          {bills.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-8 border border-dashed border-gray-200 rounded-xl">
+              No bill reminders yet. Add one above to track due dates.
+            </p>
+          )}
           {bills
             .slice()
             .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))

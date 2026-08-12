@@ -8,11 +8,11 @@ import {API_ENDPOINTS} from "../util/apiEndpoints.js";
 import {AppContext} from "../context/AppContext.jsx";
 import {LoaderCircle} from "lucide-react";
 import Header from "../components/Header.jsx";
-import { DEMO_USER, seedDummyData } from "../util/dummyData.js";
+import { DEMO_USER, initUserLocalData } from "../util/dummyData.js";
 
 const Login = () => {
-    const [email, setEmail] = useState(DEMO_USER.email);
-    const [password, setPassword] = useState(DEMO_USER.password);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const {setUser} = useContext(AppContext);
@@ -45,9 +45,8 @@ const Login = () => {
             if (token) {
                 localStorage.setItem("token", token);
                 setUser(user);
-                if (email.toLowerCase() === DEMO_USER.email) {
-                    seedDummyData(true);
-                }
+                // Demo user gets preset budgets/goals/bills; everyone else starts empty
+                initUserLocalData(user?.email || email);
                 navigate("/dashboard");
             }
         }catch(error) {

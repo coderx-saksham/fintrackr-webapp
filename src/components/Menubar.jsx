@@ -38,7 +38,7 @@ const Menubar = ({ activeMenu }) => {
         localStorage.clear();
         clearUser();
         setShowDropdown(false);
-        navigate("/login");
+        navigate("/home");
     };
 
     return (

@@ -7,10 +7,26 @@ export function computeHealthScore(dashboardData) {
   const expense = Number(dashboardData?.totalExpense || 0);
   const balance = Number(dashboardData?.totalBalance || 0);
 
-  // Demo-friendly fallbacks when little real data exists
-  const i = income > 0 ? income : 55000;
-  const e = expense > 0 ? expense : 32000;
-  const b = balance !== 0 ? balance : i - e;
+  // No demo fallbacks — new users with no transactions get a real empty/zero score
+  const hasData = income > 0 || expense > 0 || balance !== 0;
+  if (!hasData) {
+    return {
+      score: 0,
+      label: "No data yet",
+      color: "text-gray-500",
+      bar: "bg-gray-300",
+      empty: true,
+      breakdown: [
+        { name: "Savings Rate", value: "—", points: 0, max: 40 },
+        { name: "Expense Control", value: "—", points: 0, max: 35 },
+        { name: "Balance Buffer", value: "—", points: 0, max: 25 },
+      ],
+    };
+  }
+
+  const i = income;
+  const e = expense;
+  const b = balance;
 
   const savingsRate = i > 0 ? ((i - e) / i) * 100 : 0;
   const expenseRatio = i > 0 ? (e / i) * 100 : 100;
@@ -44,6 +60,7 @@ export function computeHealthScore(dashboardData) {
     label,
     color,
     bar,
+    empty: false,
     breakdown: [
       { name: "Savings Rate", value: `${savingsRate.toFixed(0)}%`, points: Math.round(savingsScore), max: 40 },
       { name: "Expense Control", value: `${expenseRatio.toFixed(0)}% of income`, points: Math.round(expenseScore), max: 35 },
@@ -70,17 +87,23 @@ const HealthScoreCard = ({ dashboardData }) => {
       <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
         <div className={`h-full ${h.bar} rounded-full`} style={{ width: `${h.score}%` }} />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {h.breakdown.map((item) => (
-          <div key={item.name} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <p className="text-xs text-gray-500">{item.name}</p>
-            <p className="text-sm font-medium text-gray-800 mt-0.5">{item.value}</p>
-            <p className="text-xs text-purple-600 mt-1">
-              {item.points}/{item.max} pts
-            </p>
-          </div>
-        ))}
-      </div>
+      {h.empty ? (
+        <p className="text-sm text-gray-500">
+          Add income or expenses to calculate your financial health score.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {h.breakdown.map((item) => (
+            <div key={item.name} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+              <p className="text-xs text-gray-500">{item.name}</p>
+              <p className="text-sm font-medium text-gray-800 mt-0.5">{item.value}</p>
+              <p className="text-xs text-purple-600 mt-1">
+                {item.points}/{item.max} pts
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

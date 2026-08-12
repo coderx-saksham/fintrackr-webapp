@@ -1,5 +1,5 @@
 export const BASE_URL = "http://localhost:8080/api/v1.0";
-const CLOUDINARY_CLOUD_NAME = "dhadf5h7j";
+const CLOUDINARY_CLOUD_NAME = "dv4kaim8z";
 
 export const API_ENDPOINTS = {
     LOGIN: "/login",

@@ -4,7 +4,7 @@ import InfoCard from "../components/InfoCard.jsx";
 import {Coins, Wallet, WalletCards} from "lucide-react";
 import {addThousandsSeparator} from "../util/util.js";
 import {useNavigate} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import axiosConfig from "../util/axiosConfig.jsx";
 import {API_ENDPOINTS} from "../util/apiEndpoints.js";
 import toast from "react-hot-toast";
@@ -15,18 +15,33 @@ import AiInsightsCard from "../components/AiInsightsCard.jsx";
 import AiMonthlySummaryCard from "../components/AiMonthlySummaryCard.jsx";
 import HealthScoreCard from "../components/HealthScoreCard.jsx";
 import WeeklyDigestCard from "../components/WeeklyDigestCard.jsx";
-import { seedDummyData, loadList, STORE_KEYS } from "../util/dummyData.js";
+import { seedDummyData, loadList, STORE_KEYS, isDemoUser } from "../util/dummyData.js";
+import { AppContext } from "../context/AppContext.jsx";
 
 const Home = () => {
     useUser();
+    const { user } = useContext(AppContext);
 
     const navigate = useNavigate();
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [quickStats, setQuickStats] = useState({ goals: 0, billsDue: 0, overBudget: 0 });
+    const [quickStats, setQuickStats] = useState({ goals: 0, billsDue: 0, overBudget: 0, budgetCount: 0 });
+
+    const refreshQuickStats = () => {
+        const goals = loadList(STORE_KEYS.goals);
+        const bills = loadList(STORE_KEYS.bills);
+        const budgets = loadList(STORE_KEYS.budgets);
+        setQuickStats({
+            goals: goals.length,
+            billsDue: bills.filter((b) => !b.paid).length,
+            overBudget: budgets.filter((b) => b.spent > b.limit).length,
+            budgetCount: budgets.length,
+        });
+    };
 
     const fetchDashboardData = async () => {
         if (loading) return;
+        if (!localStorage.getItem("token")) return;
 
         setLoading(true);
 
@@ -36,6 +51,8 @@ const Home = () => {
                 setDashboardData(response.data);
             }
         }catch (error) {
+            // Auth failures are handled by axios interceptor / useUser — avoid noisy toast on boot
+            if (error.response?.status === 401) return;
             console.error('Something went wrong while fetching dashboard data:', error);
             toast.error('Something went wrong!');
         } finally {
@@ -44,18 +61,13 @@ const Home = () => {
     }
 
     useEffect(() => {
-        seedDummyData();
-        const goals = loadList(STORE_KEYS.goals);
-        const bills = loadList(STORE_KEYS.bills);
-        const budgets = loadList(STORE_KEYS.budgets);
-        setQuickStats({
-            goals: goals.length,
-            billsDue: bills.filter((b) => !b.paid).length,
-            overBudget: budgets.filter((b) => b.spent > b.limit).length,
-        });
+        if (isDemoUser(user?.email)) {
+            seedDummyData();
+        }
+        refreshQuickStats();
         fetchDashboardData();
         return () => {};
-    }, []);
+    }, [user?.email]);
 
     return (
         <div>
@@ -70,7 +82,11 @@ const Home = () => {
                         <button onClick={() => navigate("/budgets")} className="card text-left py-4 hover:border-purple-200">
                             <p className="text-xs text-gray-500">Budgets</p>
                             <p className="text-lg font-semibold text-gray-800 mt-1">
-                                {quickStats.overBudget > 0 ? `${quickStats.overBudget} over` : "On track"}
+                                {quickStats.overBudget > 0
+                                    ? `${quickStats.overBudget} over`
+                                    : quickStats.budgetCount === 0
+                                        ? "None yet"
+                                        : "On track"}
                             </p>
                         </button>
                         <button onClick={() => navigate("/goals")} className="card text-left py-4 hover:border-purple-200">
@@ -87,25 +103,20 @@ const Home = () => {
                         </button>
                     </div>
 
-                    <div className="mb-4 flex justify-end">
-                        <button
-                            onClick={() => {
-                                seedDummyData(true);
-                                const goals = loadList(STORE_KEYS.goals);
-                                const bills = loadList(STORE_KEYS.bills);
-                                const budgets = loadList(STORE_KEYS.budgets);
-                                setQuickStats({
-                                    goals: goals.length,
-                                    billsDue: bills.filter((b) => !b.paid).length,
-                                    overBudget: budgets.filter((b) => b.spent > b.limit).length,
-                                });
-                                toast.success("Demo data restored");
-                            }}
-                            className="text-xs text-gray-400 hover:text-purple-700"
-                        >
-                            Reset demo data
-                        </button>
-                    </div>
+                    {isDemoUser(user?.email) && (
+                        <div className="mb-4 flex justify-end">
+                            <button
+                                onClick={() => {
+                                    seedDummyData(true);
+                                    refreshQuickStats();
+                                    toast.success("Demo data restored");
+                                }}
+                                className="text-xs text-gray-400 hover:text-purple-700"
+                            >
+                                Reset demo data
+                            </button>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <InfoCard

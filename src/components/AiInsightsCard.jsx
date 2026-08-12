@@ -8,7 +8,7 @@ const AiInsightsCard = () => {
     const [insights, setInsights] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const fetchInsights = async () => {
+    const fetchInsights = async ({ silent = false } = {}) => {
         if (loading) return;
         setLoading(true);
         try {
@@ -16,14 +16,16 @@ const AiInsightsCard = () => {
             setInsights(response.data.insights || "");
         } catch (error) {
             console.error("Failed to fetch AI insights:", error);
-            toast.error("Failed to load AI insights");
+            if (!silent && error.response?.status !== 401) {
+                toast.error("Failed to load AI insights");
+            }
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchInsights();
+        fetchInsights({ silent: true });
     }, []);
 
     const lines = insights
@@ -43,7 +45,7 @@ const AiInsightsCard = () => {
                     </span>
                 </div>
                 <button
-                    onClick={fetchInsights}
+                    onClick={() => fetchInsights()}
                     disabled={loading}
                     className="card-btn"
                 >

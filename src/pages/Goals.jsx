@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Dashboard from "../components/Dashboard.jsx";
 import { useUser } from "../hooks/useUser.jsx";
-import { loadList, saveList, seedDummyData, STORE_KEYS } from "../util/dummyData.js";
+import { loadList, saveList, seedDummyData, STORE_KEYS, isDemoUser } from "../util/dummyData.js";
 import { addThousandsSeparator } from "../util/util.js";
 import toast from "react-hot-toast";
 import { Plus, Target } from "lucide-react";
@@ -14,7 +14,9 @@ const Goals = () => {
   const [contributeAmt, setContributeAmt] = useState("");
 
   useEffect(() => {
-    seedDummyData();
+    if (isDemoUser()) {
+      seedDummyData();
+    }
     setGoals(loadList(STORE_KEYS.goals));
   }, []);
 
@@ -113,6 +115,11 @@ const Goals = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {goals.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-8 border border-dashed border-gray-200 rounded-xl md:col-span-2">
+              No savings goals yet. Create one above to get started.
+            </p>
+          )}
           {goals.map((g) => {
             const pct = Math.min(100, Math.round((g.saved / g.target) * 100));
             return (

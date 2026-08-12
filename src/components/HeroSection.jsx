@@ -19,7 +19,7 @@ const HeroSection = () => {
                         Start Tracking for Free
                     </Link>
                     <Link
-                        to="/signup"
+                        to="/home#about"
                         className="w-full sm:w-auto bg-gray-100 text-gray-800 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
                     >
                         Learn More <ArrowRight className="h-5 w-5" />
