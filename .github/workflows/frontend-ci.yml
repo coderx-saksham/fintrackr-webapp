@@ -2,9 +2,9 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   build-and-lint:
@@ -29,8 +29,3 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-# NOTE: Vercel deploys automatically on every push to main once you connect
-# the repo in the Vercel dashboard (Project -> Git). No deploy step needed
-# here — this workflow's job is to fail fast in the GitHub Actions tab if
-# something is broken, before Vercel even attempts its own build.
